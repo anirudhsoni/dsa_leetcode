@@ -1,44 +1,34 @@
 class Solution:
     def solveNQueens(self, n: int) -> List[List[str]]:
-        r=set()
-        c=set()
-        sm=set()
-        dif=set()
         res=[]
-        b=[['.']*n for i in range(n)]
-        def chk(x,y):
-            if x in r or y in c or x+y in sm or x-y in dif:
-                return False
-            return True
+        comb=[["."]*n for i in range(n)]
+        col=set()
+        smset=set()
+        difset=set()
 
-        def dfs(x,y):
-            if len(r)==n:
-                t=[]
-                for i in b:
-                    t.append(''.join(i))
-                res.append(t)
-                return
-            if x>=n:
-                return
-            if y==n:
-                dfs(x+1,0)
-                return
-            if chk(x,y):
-                b[x][y]='Q'
-                # print(x,y,'Q')
-                r.add(x)
-                c.add(y)
-                sm.add(x+y)
-                dif.add(x-y)
-                dfs(x,y+1)
-                b[x][y]='.'
-                r.remove(x)
-                c.remove(y)
-                sm.remove(x+y)
-                dif.remove(x-y)
-            dfs(x,y+1)
-            return 
+        def chk(r,i):
+            if i==n:
+                r=[''.join(k) for k in comb]
+                res.append(r)
+                return 
+            for c in range(n):
+                if c in col or r+c in smset or r-c in difset:
+                    continue
+                comb[r][c]='Q'
+                col.add(c)
+                smset.add(r+c)
+                difset.add(r-c)
+                chk(r+1,i+1)
+                comb[r][c]='.'
+                col.remove(c)
+                smset.remove(r+c)
+                difset.remove(r-c)
         
-        dfs(0,0)
+        chk(0,0)
+        # print(res)
         return res
 
+
+
+            
+        
