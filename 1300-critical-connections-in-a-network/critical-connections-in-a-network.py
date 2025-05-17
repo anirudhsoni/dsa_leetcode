@@ -1,30 +1,58 @@
 class Solution:
     def criticalConnections(self, n: int, connections: List[List[int]]) -> List[List[int]]:
-
-        adj={i:set() for i in range(n)}
-
-        for a,b in connections:
-            adj[a].add(b)
-            adj[b].add(a)
+        graph=collections.defaultdict(set)
+        for x,y in connections:
+            graph[x].add(y)
+            graph[y].add(x)
         
-        time={}
-        critical=[]
+        def bridgeUtil(u, visited, parent, low, disc, time): 
 
-        def dfs(n,parent,t):
-            if n in time:
-                return
-            time[n]=[t,t]
-            for child in adj[n]:
-                if child!=parent:
-                    dfs(child,n,t+1)
-            for child in adj[n]:
-                if child!=parent:
-                    time[n][1]=min(time[n][1],time[child][1])
+            # Mark the current node as visited and print it 
+            visited[u]= True
 
-            if time[parent][1]<time[n][1]:
-                critical.append([parent,n])
-            return
+            # Initialize discovery time and low value 
+            disc[u] = time[0]
+            low[u] = time[0]
+            time[0]+=1
 
-        dfs(0,0,0)
-        
-        return critical
+            #Recur for all the vertices adjacent to this vertex 
+            ans=[]
+            for v in graph[u]: 
+                # If v is not visited yet, then make it a child of u 
+                # in DFS tree and recur for it 
+                if visited[v] == False : 
+                    parent[v] = u 
+                    find = bridgeUtil(v, visited, parent, low, disc,time) 
+                    ans.extend(find)
+
+                    # Check if the subtree rooted with v has a connection to 
+                    # one of the ancestors of u 
+                    low[u] = min(low[u], low[v]) 
+
+
+                    ''' If the lowest vertex reachable from subtree 
+                    under v is below u in DFS tree, then u-v is 
+                    a bridge'''
+                    if low[v] > disc[u]: 
+                        ans.append([u,v])
+
+
+                elif v != parent[u]: # Update low value of u for parent function calls. 
+                    low[u] = min(low[u], disc[v]) 
+            return ans
+
+
+
+        visited = [False] * (n) 
+        disc = [float("Inf")] * (n) 
+        low = [float("Inf")] * (n) 
+        parent = [-1] * (n) 
+
+        # Call the recursive helper function to find bridges 
+        # in DFS tree rooted with vertex 'i' 
+        ans=[]
+        time=[0]
+        for i in range(n): 
+            if visited[i] == False: 
+                ans.extend(bridgeUtil(i, visited, parent, low, disc,time))
+        return ans
